@@ -2,13 +2,18 @@ use std::{
     fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}
 };
 
+use webserver::ThreadPool;
+
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
+    let pool = ThreadPool::new(4);
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        handle_connection(stream);
+        pool.excute(|| {
+            handle_connection(stream);
+        });
     }
 }
 
