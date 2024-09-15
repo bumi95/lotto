@@ -1,38 +1,51 @@
+use actix_web::{get, web, App, HttpServer, Responder};
 use std::{
-    fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}
+    cell::Cell,
+    sync::atomic::{AtomicUsize, Ordering},
+    sync::Arc,
 };
 
-use webserver::ThreadPool;
-
-fn main() {
-    let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
-    let pool = ThreadPool::new(4);
-
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
-
-        pool.excute(|| {
-            handle_connection(stream);
-        });
-    }
+#[derive(Clone)]
+struct AppState {
+    local: Cell<usize>,
+    global: Arc<AtomicUsize>,
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let http_req = buf_reader.lines().next().unwrap().unwrap();
+#[get("/")]
+async fn show_count(data: web::Data<AppState>) -> impl Responder {
+    format!(
+        "global count : {}\nlocal count : {}",
+        data.global.load(Ordering::Relaxed), data.local.get()
+    )
+}
 
-    let http_split: Vec<_> = http_req.split(' ').collect();
+#[get("/add")]
+async fn add_one(data: web::Data<AppState>) -> impl Responder {
+    data.global.fetch_add(1, Ordering::Relaxed);
 
-    let (status_line, filename) = if http_split[1] == "/" {
-        ("HTTP/1.1 200 OK", "test.html")
-    } else {
-        ("HTTP/1.1 404 NOT FOUND", "404.html")
+    let local_cnt = data.local.get();
+    data.local.set(local_cnt + 1);
+
+    format!(
+        "global count : {}\nlocal count : {}",
+        data.global.load(Ordering::Relaxed), data.local.get()
+    )
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let data = AppState {
+        local: Cell::new(0),
+        global: Arc::new(AtomicUsize::new(0)),
     };
 
-    let contents = fs::read_to_string(filename).unwrap();
-    let length = contents.len();
-
-    let response = format!("{status_line}\r\nContents-Length: {length}\r\n\r\n{contents}");
-
-    stream.write_all(response.as_bytes()).unwrap();
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(data.clone()))
+            .service(show_count)
+            .service(add_one)
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
 }
