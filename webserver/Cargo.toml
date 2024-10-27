@@ -2,6 +2,7 @@
 name = "webserver"
 version = "0.1.1-dev"
 edition = "2021"
+author = "JongBum Park"
 
 [dependencies]
 actix-web = "4.0"
