@@ -1,38 +1,40 @@
-use std::{
-    fs, io::{prelude::*, BufReader}, net::{TcpListener, TcpStream}
-};
+use actix_cors::Cors;
+use actix_files::Files;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use rand::seq::SliceRandom;
+use serde::Serialize;
 
-use webserver::ThreadPool;
-
-fn main() {
-    let listener = TcpListener::bind("0.0.0.0:7878").unwrap();
-    let pool = ThreadPool::new(4);
-
-    for stream in listener.incoming() {
-        let stream = stream.unwrap();
-
-        pool.excute(|| {
-            handle_connection(stream);
-        });
-    }
+#[derive(Serialize)]
+struct LottoNumbers {
+    numbers: Vec<u8>,
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let http_req = buf_reader.lines().next().unwrap().unwrap();
+#[get("/lotto")]
+async fn get_lotto_numbers() -> impl Responder {
+    let mut numbers: Vec<u8> = (1..46).collect(); // 로또 번호는 1부터 45까지
+    let mut rng = rand::thread_rng();
+    numbers.shuffle(&mut rng);
+    let mut selected_numbers = numbers[..6].to_vec(); // 첫 6개 번호 선택
+    selected_numbers.sort();
 
-    let http_split: Vec<_> = http_req.split(' ').collect();
+    HttpResponse::Ok().json(LottoNumbers {
+        numbers: selected_numbers,
+    })
+}
 
-    let (status_line, filename) = if http_split[1] == "/" {
-        ("HTTP/1.1 200 OK", "test.html")
-    } else {
-        ("HTTP/1.1 404 NOT FOUND", "404.html")
-    };
-
-    let contents = fs::read_to_string(filename).unwrap();
-    let length = contents.len();
-
-    let response = format!("{status_line}\r\nContents-Length: {length}\r\n\r\n{contents}");
-
-    stream.write_all(response.as_bytes()).unwrap();
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .wrap(Cors::default().allow_any_origin())
+            .service(get_lotto_numbers)
+            .service(
+                Files::new("/", "./")
+                    .index_file("main.html")
+                    .show_files_listing(),
+            )
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
 }
