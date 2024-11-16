@@ -1,8 +1,12 @@
 use actix_cors::Cors;
 use actix_files::Files;
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, App, HttpResponse, HttpServer, Responder, middleware::Logger};
 use rand::seq::SliceRandom;
 use serde::Serialize;
+
+const LOTTO_MIN: u8 = 1;
+const LOTTO_MAX: u8 = 45;
+const LOTTO_COUNT: usize = 6;
 
 #[derive(Serialize)]
 struct LottoNumbers {
@@ -11,12 +15,12 @@ struct LottoNumbers {
 
 #[get("/lotto")]
 async fn get_lotto_numbers() -> impl Responder {
-    let mut numbers: Vec<u8> = (1..46).collect(); // 로또 번호는 1부터 45까지
+    let mut numbers: Vec<u8> = (LOTTO_MIN..=LOTTO_MAX).collect();
     let mut rng = rand::thread_rng();
+    
     numbers.shuffle(&mut rng);
-    let mut selected_numbers = numbers[..6].to_vec(); // 첫 6개 번호 선택
+    let mut selected_numbers = numbers[..LOTTO_COUNT].to_vec();
     selected_numbers.sort();
-
     HttpResponse::Ok().json(LottoNumbers {
         numbers: selected_numbers,
     })
@@ -24,9 +28,18 @@ async fn get_lotto_numbers() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
     HttpServer::new(|| {
         App::new()
-            .wrap(Cors::default().allow_any_origin())
+            .wrap(Logger::default())
+            .wrap(
+                Cors::default()
+                    .allowed_origin("http://localhost:5173")
+                    .allowed_methods(vec!["GET"])
+                    .allow_any_header()
+                    .max_age(3600)
+            )
             .service(get_lotto_numbers)
             .service(
                 Files::new("/", "./")
