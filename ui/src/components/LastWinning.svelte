@@ -4,11 +4,11 @@
 </script>
 
 <div class="section last-winning">
-    <h2 class="title">지난 회차 당첨 결과</h2>
+    <h1>지난 회차 당첨 결과</h1>
     {#if lastWinInfo}
         <div class="winning-info">
-            <p class="round">제 {lastWinInfo.drwNo}회</p>
-            <p class="date">{lastWinInfo.drwNoDate}</p>
+            <h2>제 {lastWinInfo.drwNo}회</h2>
+            <h3>{lastWinInfo.drwNoDate}</h3>
             <div class="winning-numbers">
                 {#each [lastWinInfo.drwtNo1, lastWinInfo.drwtNo2, lastWinInfo.drwtNo3, 
                         lastWinInfo.drwtNo4, lastWinInfo.drwtNo5, lastWinInfo.drwtNo6] as num}
@@ -27,43 +27,90 @@
 </div>
 
 <style>
-    .title {
+    h1 {
         text-align: center;
         margin-bottom: 1.5rem;
         color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
     .winning-info {
         text-align: center;
     }
     
-    .round {
-        font-size: 1.2rem;
+    h2 {
+        font-size: 1.3rem;
         font-weight: bold;
         color: #2c3e50;
     }
 
-    .date {
+    h3 {
         color: #666;
         margin-bottom: 1rem;
+        font-size: 1.1rem;
     }
 
     .winning-numbers {
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 0.5rem;
-        margin: 1rem 0;
+        gap: 0.8rem;
+        margin: 1.5rem 0;
+    }
+
+    .number {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: white;
+        box-shadow: 
+            inset -4px -4px 8px rgba(0, 0, 0, 0.5),
+            inset 4px 4px 8px rgba(255, 255, 255, 0.5),
+            5px 5px 10px rgba(0, 0, 0, 0.2),
+            -2px -2px 6px rgba(255, 255, 255, 0.1);
+        text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+    .number:hover {
+        transform: scale(1.1);
+    }
+
+    .number::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+        pointer-events: none;
     }
 
     .plus {
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         font-weight: bold;
         color: #666;
+        margin: 0 0.5rem;
     }
 
     .highlight {
         color: #e74c3c;
         font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .prize-info {
+        margin-top: 1.5rem;
+        line-height: 1.8;
+        font-size: 1.1rem;
     }
 </style> 

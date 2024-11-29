@@ -8,7 +8,7 @@
 </script>
 
 <div class="section winning-stores">
-    <h2 class="title">1등 당첨 판매점</h2>
+    <h1>1등 당첨 판매점</h1>
     <div class="store-list">
         {#each winningStores as store}
             <div class="store-item">
@@ -25,7 +25,7 @@
 </div>
 
 <style>
-    .title {
+    h1 {
         text-align: center;
         margin-bottom: 1.5rem;
         color: #2c3e50;
@@ -47,7 +47,7 @@
         padding: 1rem;
         border-radius: 8px;
         background: #f8f9fa;
-        transition: transform 0.2s;
+        transition: all 0.2s ease;
     }
 
     .store-item:hover {
@@ -55,20 +55,18 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .store-item h3 {
-        color: #2c3e50;
-        margin: 0 0 0.5rem 0;
+    :global(body.dark-theme) .store-item {
+        background-color: #1a2733;
+        color: #fff;
     }
 
-    .store-item p {
-        margin: 0;
-        color: #666;
+    :global(body.dark-theme) .store-item:hover {
+        background-color: #111a22;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    .method {
-        font-weight: bold;
-        margin-top: 0.5rem;
-        color: #666; /* 기본 색상 */
+    :global(body.dark-theme) .store-item h3 {
+        color: #fff;
     }
 
     .auto {
