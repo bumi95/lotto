@@ -186,49 +186,45 @@
     .container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
+        gap: 1rem;
         max-width: 1200px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 1rem;
     }
 
     @media (max-width: 768px) {
         .container {
             grid-template-columns: 1fr;
+            padding: 0.5rem;
+            gap: 0.5rem;
         }
     }
 
     :global(.section) {
         background: white;
         border-radius: 15px;
-        padding: 1.5rem;
+        padding: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     :global(.number) {
-        display: inline-block;
-        color: #fff;
-        width: 40px;
-        height: 40px;
-        line-height: 40px;
-        border-radius: 50%;
-        margin: 5px;
-        text-align: center;
-        box-shadow: 
-            inset -4px -4px 8px rgba(0,0,0,0.4),
-            inset 4px 4px 8px rgba(255,255,255,0.4),
-            5px 5px 10px rgba(0,0,0,0.4),
-            -2px -2px 6px rgba(255,255,255,0.1);
-        text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
-        position: relative;
-        overflow: hidden;
+        width: clamp(25px, 5vw, 40px);
+        height: clamp(25px, 5vw, 40px);
+        line-height: clamp(25px, 5vw, 40px);
+        font-size: clamp(12px, 3vw, 16px);
     }
 
     :global(.number.small) {
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        font-size: 16px;
+        width: clamp(20px, 4vw, 30px);
+        height: clamp(20px, 4vw, 30px);
+        line-height: clamp(20px, 4vw, 30px);
+        font-size: clamp(10px, 2.5vw, 14px);
+    }
+
+    @media (max-width: 480px) {
+        :global(.section) {
+            padding: 0.75rem;
+        }
     }
 
     :global(.yellow) { background: linear-gradient(145deg, #ffd324 0%, #e6b600 50%, #cc9900 100%); }

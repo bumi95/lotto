@@ -112,18 +112,17 @@
 <style>
     .chart-container {
         grid-column: 1 / -1;
-        padding: 2rem;
+        padding: clamp(1rem, 3vw, 2rem);
     }
 
     h2 {
         text-align: center;
-        color: #2c3e50;
-        margin-bottom: 2rem;
-        font-size: 1.5rem;
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
+        margin-bottom: clamp(1rem, 3vw, 2rem);
     }
 
     .canvas-wrapper {
-        height: 400px;
+        height: clamp(300px, 60vh, 400px);
         width: 100%;
         position: relative;
     }
@@ -131,6 +130,12 @@
     canvas {
         width: 100% !important;
         height: 100% !important;
+    }
+
+    @media (max-width: 480px) {
+        .chart-container {
+            padding: 0.75rem;
+        }
     }
 /*
     :global(body.dark-theme) .chart-container h2 {

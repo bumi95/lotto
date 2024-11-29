@@ -1,6 +1,6 @@
 use actix_cors::Cors;
 use actix_files::{Files, NamedFile};
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
+use actix_web::{get, http, web, App, HttpResponse, HttpServer, Responder, middleware::Logger};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use serde::{Deserialize, Serialize};
 use reqwest;
@@ -424,8 +424,10 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(
                 Cors::default()
+                    .allow_any_origin()
                     .allowed_methods(vec!["GET"])
-                    .allow_any_header()
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                    .allowed_header(http::header::CONTENT_TYPE)
                     .max_age(3600)
             )
             .service(get_last_winning)
@@ -433,12 +435,12 @@ async fn main() -> std::io::Result<()> {
             .service(get_db_chart)
             .service(generate_numbers)
             .service(
-                Files::new("/", "../ui/build")
+                Files::new("/", "ui/build")
                     .index_file("index.html")
                     .default_handler(|req: ServiceRequest| {
                         let (http_req, _payload) = req.into_parts();
                         async {
-                            let response = NamedFile::open("../ui/build/index.html")?
+                            let response = NamedFile::open("ui/build/index.html")?
                                 .into_response(&http_req);
                             Ok(ServiceResponse::new(http_req, response))
                         }

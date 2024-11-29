@@ -29,6 +29,7 @@
         text-align: center;
         margin-bottom: 1.5rem;
         color: #2c3e50;
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
     }
 
     .winning-stores {
@@ -38,8 +39,8 @@
     .store-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        max-height: 400px;
+        gap: 0.75rem;
+        max-height: clamp(300px, 60vh, 400px);
         overflow-y: auto;
     }
 
@@ -79,5 +80,19 @@
 
     .store-item .address {
         margin-top: 0.5rem;
+    }
+
+    .store-item h3 {
+        font-size: clamp(1rem, 3.5vw, 1.2rem);
+    }
+
+    .store-item p {
+        font-size: clamp(0.875rem, 3vw, 1rem);
+    }
+
+    @media (max-width: 480px) {
+        .store-item {
+            padding: 0.75rem;
+        }
     }
 </style> 
