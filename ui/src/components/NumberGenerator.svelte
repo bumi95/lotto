@@ -1,12 +1,29 @@
 <script>
     import { getColorClass } from '$lib/utils';
+    import LoadingSpinner from './LoadingSpinner.svelte';
+    
     export let generatedNumbers = [];
     export let onGenerate;
+    
+    let isGenerating = false;
+    
+    async function handleGenerate() {
+        isGenerating = true;
+        await onGenerate();
+        isGenerating = false;
+    }
 </script>
 
 <div class="section number-generator">
     <h1>로또 번호 추첨기</h1>
-    <button on:click={onGenerate}>번호 추첨하기</button>
+    <button on:click={handleGenerate} disabled={isGenerating}>
+        {#if isGenerating}
+            <LoadingSpinner size="small" />
+            추첨 중...
+        {:else}
+            번호 추첨하기
+        {/if}
+    </button>
     <div id="lotto-numbers">
         {#each generatedNumbers as num}
             <div class="number {getColorClass(num)}">{num}</div>
@@ -37,6 +54,11 @@
         transition: all 0.3s;
         margin-bottom: 1.5rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-width: 120px;
     }
 
     button:hover {
@@ -48,6 +70,11 @@
     button:active {
         transform: translateY(0);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
     #lotto-numbers {
@@ -92,5 +119,11 @@
         border-radius: 50%;
         background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
         pointer-events: none;
+    }
+
+    :global(.small-spinner) {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
     }
 </style> 
