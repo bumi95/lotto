@@ -11,13 +11,12 @@ FROM ubuntu:24.04
 RUN apt-get update && apt-get install -y openssl ca-certificates
 RUN apt-get install -y libsqlite3-0
 
-RUN useradd -ms /bin/bash app
-
-USER app
 WORKDIR /app
 
 COPY --from=builder /usr/src/app/webserver/webserver /app/webserver
 COPY --from=builder /usr/src/app/webserver/lotto.db /app/lotto.db
 COPY --from=builder /usr/src/app/ui/build /app/ui/build
+
+RUN chmod 664 lotto.db
 
 CMD ./webserver

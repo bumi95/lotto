@@ -395,6 +395,12 @@ async fn generate_numbers() -> impl Responder {
     })
 }
 
+// 헬스 체크 핸들러 추가
+#[get("/healthcheck")]
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().finish()
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     // DB 초기화
@@ -430,6 +436,8 @@ async fn main() -> std::io::Result<()> {
                     .allowed_header(http::header::CONTENT_TYPE)
                     .max_age(3600)
             )
+            // 헬스 체크 서비스 추가
+            .service(health_check)
             .service(get_last_winning)
             .service(get_winning_stores)
             .service(get_db_chart)
