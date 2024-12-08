@@ -25,3 +25,6 @@ primary_region = 'nrt'
 
 [[vm]]
   size = 'shared-cpu-1x'
+
+[scale]
+  count = 1
