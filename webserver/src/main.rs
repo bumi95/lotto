@@ -9,8 +9,8 @@ use tokio::time::{self, Duration};
 use chrono::{Datelike, Local, Weekday};
 use std::sync::Arc;
 use tokio_rusqlite::{Connection, Error};
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use pyo3::prelude::*;
+use pyo3::types::{PyList, PyModule};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct WinningNumbers {
@@ -376,22 +376,53 @@ struct GeneratedNumbers {
     numbers: Vec<u32>
 }
 
+async fn call_predictor_pyo3(past_draws: Vec<Vec<u32>>) -> Option<Vec<u32>> {
+    Python::with_gil(|py| {
+        // predictor.py 모듈 import
+        let predictor = PyModule::from_code_bound(
+            py,
+            &std::fs::read_to_string("predictor.py").ok()?,
+            "predictor.py",
+            "predictor"
+        ).ok()?;
+
+        // Rust Vec<Vec<u32>> → Python List[List[int]]
+        let py_draws = PyList::new_bound(py, past_draws.iter().map(|row| PyList::new_bound(py, row)));
+
+        // Python 함수 호출
+        let result = predictor.getattr("predict").ok()?.call1((py_draws,)).ok()?;
+
+        // Python List[int] → Rust Vec<u32>
+        let result_vec: Vec<u32> = result.extract().ok()?;
+        Some(result_vec)
+    })
+}
+
 #[get("/api/lotto/generate")]
-async fn generate_numbers() -> impl Responder {
-    let mut numbers: Vec<u32> = (1..=45).collect();
-    let mut rng = thread_rng();
-    numbers.shuffle(&mut rng);
-    
-    let selected_numbers: Vec<u32> = numbers.iter()
-        .take(6)
-        .cloned()
-        .collect();
-    
-    let mut sorted_numbers = selected_numbers;
-    sorted_numbers.sort();
+async fn generate_numbers(db: web::Data<Arc<Database>>) -> impl Responder {
+    // DB에서 전체 1등 번호를 가져와서 2차원 배열로 변환
+    let draws = match db.get_all_winning_numbers().await {
+        Ok(numbers) => numbers
+            .iter()
+            .map(|n| vec![n.num1, n.num2, n.num3, n.num4, n.num5, n.num6])
+            .collect::<Vec<_>>(),
+        Err(e) => {
+            eprintln!("DB 데이터 조회 실패: {}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    // Python predictor로 예측
+    let predicted = match call_predictor_pyo3(draws).await {
+        Some(nums) => nums,
+        None => {
+            eprintln!("Python predictor 호출 실패");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
 
     HttpResponse::Ok().json(GeneratedNumbers {
-        numbers: sorted_numbers
+        numbers: predicted
     })
 }
 
